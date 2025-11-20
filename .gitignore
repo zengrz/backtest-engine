@@ -1,0 +1,14 @@
+# Build artifacts
+build/
+*.so
+*.pyd
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Temporary test scripts
+python/test_build.py
+
+# System files
+.DS_Store
