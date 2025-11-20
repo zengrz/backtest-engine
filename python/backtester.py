@@ -7,10 +7,26 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 try:
     import _backtest_engine as _be
-except ImportError:
-    # Fallback for development if the .pyd/.so is in the build directory
-    # This is just a hint, user needs to build first
-    pass
+except ImportError as e:
+    import sys
+    import os
+    cwd = os.getcwd()
+    path = sys.path
+    version = sys.version
+    files = os.listdir(os.path.dirname(os.path.abspath(__file__)))
+    raise ImportError(f"Failed to import _backtest_engine extension: {e}.\n"
+                      f"Debug Info:\n"
+                      f"  Python Version: {version}\n"
+                      f"  CWD: {cwd}\n"
+                      f"  Path: {path}\n"
+                      f"  Files in {os.path.dirname(os.path.abspath(__file__))}: {files}\n"
+                      f"Ensure the project is built and the extension is in the python path.") from e
+
+# Export types for user convenience
+Bar = _be.Bar
+Side = _be.Side
+Order = _be.Order
+OrderType = _be.OrderType
 
 class Strategy(_be.Strategy):
     """Base class for user strategies."""

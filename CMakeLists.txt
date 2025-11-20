@@ -7,6 +7,9 @@ set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+# Set CUDA architectures for RTX 3090 (compute capability 8.6)
+set(CMAKE_CUDA_ARCHITECTURES 86)
+
 # Find dependencies
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 find_package(pybind11 REQUIRED)

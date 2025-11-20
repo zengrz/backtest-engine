@@ -12,7 +12,7 @@ __global__ void sma_kernel(const double* prices, double* output, int n, int peri
 
     double sum = 0.0;
     for (int i = 0; i < period; ++i) {
-        sum += prices[idx - i];
+        sum += prices[idx - period + 1 + i];
     }
     output[idx] = sum / period;
 }

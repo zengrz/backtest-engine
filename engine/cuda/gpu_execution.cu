@@ -17,12 +17,18 @@ std::vector<double> GpuExecution::compute_sma(const std::vector<double>& prices,
     cudaError_t err;
 
     err = cudaMalloc(&d_prices, bytes);
-    if (err != cudaSuccess) throw std::runtime_error("cudaMalloc failed");
+    if (err != cudaSuccess) {
+        std::string error_msg = "cudaMalloc failed for d_prices: ";
+        error_msg += cudaGetErrorString(err);
+        throw std::runtime_error(error_msg);
+    }
 
     err = cudaMalloc(&d_output, bytes);
     if (err != cudaSuccess) {
         cudaFree(d_prices);
-        throw std::runtime_error("cudaMalloc failed");
+        std::string error_msg = "cudaMalloc failed for d_output: ";
+        error_msg += cudaGetErrorString(err);
+        throw std::runtime_error(error_msg);
     }
 
     err = cudaMemcpy(d_prices, prices.data(), bytes, cudaMemcpyHostToDevice);
@@ -33,6 +39,26 @@ std::vector<double> GpuExecution::compute_sma(const std::vector<double>& prices,
     }
 
     cuda::launch_sma_kernel(d_prices, d_output, n, period);
+    
+    // Check for kernel launch errors
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        cudaFree(d_prices);
+        cudaFree(d_output);
+        std::string error_msg = "Kernel launch failed: ";
+        error_msg += cudaGetErrorString(err);
+        throw std::runtime_error(error_msg);
+    }
+    
+    // Wait for kernel to complete
+    err = cudaDeviceSynchronize();
+    if (err != cudaSuccess) {
+        cudaFree(d_prices);
+        cudaFree(d_output);
+        std::string error_msg = "Kernel execution failed: ";
+        error_msg += cudaGetErrorString(err);
+        throw std::runtime_error(error_msg);
+    }
 
     std::vector<double> output(n);
     err = cudaMemcpy(output.data(), d_output, bytes, cudaMemcpyDeviceToHost);
